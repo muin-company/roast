@@ -4,7 +4,7 @@
   "description": "AI code reviewer that roasts your code (with love)",
   "main": "lib/roast.js",
   "bin": {
-    "roast": "./bin/roast.js"
+    "roast": "bin/roast.js"
   },
   "scripts": {
     "test": "node examples/test.js"

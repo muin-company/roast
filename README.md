@@ -1,18 +1,46 @@
-# 🔥 roast
+# roast
 
-AI code reviewer that roasts your code (with love).
+AI code reviewer that roasts your code with humor and honesty.
 
-Because every developer needs a brutally honest code review from an AI with a sense of humor.
+[![npm version](https://badge.fury.io/js/@muin%2Froast.svg)](https://www.npmjs.com/package/@muin/roast)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/muinmomin/roast.svg?style=social)](https://github.com/muinmomin/roast)
 
 ## What is this?
 
-`roast` is a CLI tool that uses Claude to review your code and deliver feedback that's:
-- **Accurate** - Real issues, not generic fluff
-- **Funny** - Because code review doesn't have to be boring
-- **Useful** - Actual suggestions you can apply
-- **Shareable** - Perfect for Twitter/Discord flexing
+`roast` is a CLI tool that uses Claude to review your code and deliver feedback that's accurate, funny, and useful. Think Gordon Ramsay meets your senior developer.
 
-Think Gordon Ramsay meets your senior developer.
+## Why use this?
+
+**Before:**
+```
+You: "Is this code good?"
+Brain: "Probably fine..."
+*ships to production*
+*everything breaks*
+```
+
+**After:**
+```bash
+$ roast bubble-sort.js
+```
+```
+🔥 Oh boy, bubble sort in 2026? What's next, a floppy disk driver?
+
+🔥 This function mutates the input array. That's like borrowing 
+someone's car and returning it as a motorcycle.
+
+💡 Use Array.prototype.toSorted() if you're on Node 20+
+```
+
+**Real problems:**
+- Code reviews take days
+- Teammates are too nice to be honest
+- You're working solo with no feedback
+- CI catches bugs after you commit
+- Writing tests doesn't catch design issues
+
+`roast` gives you instant, brutally honest feedback before you commit. Use roast mode for your own code, serious mode for team reviews.
 
 ## Installation
 
@@ -20,7 +48,7 @@ Think Gordon Ramsay meets your senior developer.
 npm install -g @muin/roast
 ```
 
-Or run directly:
+Or run without installing:
 ```bash
 npx @muin/roast your-file.js
 ```
@@ -33,6 +61,8 @@ Get your Anthropic API key at [console.anthropic.com](https://console.anthropic.
 export ANTHROPIC_API_KEY="your-key-here"
 ```
 
+Add to `~/.bashrc` or `~/.zshrc` to make it permanent.
+
 ## Usage
 
 ### Roast mode (default)
@@ -40,19 +70,7 @@ export ANTHROPIC_API_KEY="your-key-here"
 roast src/app.js
 ```
 
-### Serious mode
-```bash
-roast --serious src/app.js
-```
-
-### Custom model
-```bash
-roast --model claude-opus-4 src/app.js
-```
-
-## Examples
-
-**Roast mode:**
+Output:
 ```
 🔥 CODE ROAST 🔥
 Victim: bubble-sort.js (JavaScript)
@@ -63,8 +81,8 @@ Victim: bubble-sort.js (JavaScript)
 🔥 This function mutates the input array. That's like borrowing 
 someone's car and returning it as a motorcycle.
 
-💡 Use `Array.prototype.toSorted()` if you're on Node 20+, or 
-at least clone the array first: `const sorted = [...arr]`
+💡 Use Array.prototype.toSorted() if you're on Node 20+, or 
+at least clone the array first: const sorted = [...arr]
 
 🔥 No input validation. Passing a string? Enjoy your runtime error.
 
@@ -75,7 +93,12 @@ correctly bad.
 Roasted with ❤️  by Claude
 ```
 
-**Serious mode:**
+### Serious mode
+```bash
+roast --serious src/app.js
+```
+
+Output:
 ```
 📋 Professional Code Review
 File: api-handler.js (JavaScript)
@@ -90,6 +113,11 @@ File: api-handler.js (JavaScript)
 ✅ Good error handling structure
 
 ──────────────────────────────────────────────────
+```
+
+### Custom model
+```bash
+roast --model claude-opus-4 src/app.js
 ```
 
 ## Supported Languages
@@ -113,13 +141,31 @@ JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, Ruby, PHP, Swift, Kotlin
 - **Review before committing** - Catch bugs before your CI does
 - **Roast legacy code** - Therapeutic and educational
 
-## Why?
+## Contributing
 
-Because:
-1. Code review should be fun
-2. AI feedback is usually boring
-3. Developers love roasting each other's code
-4. Sometimes you need honesty, not cheerleading
+Found a bug? Want to add a feature?
+
+```bash
+# Clone the repo
+git clone https://github.com/muinmomin/roast.git
+cd roast
+
+# Install dependencies
+npm install
+
+# Test locally
+npm link
+roast test-file.js
+
+# Run tests (if available)
+npm test
+```
+
+Pull requests welcome! Please:
+- Keep the humor sharp but not mean
+- Add tests for new features
+- Follow existing code style
+- Update README if adding options
 
 ## License
 
@@ -134,6 +180,6 @@ Built with:
 
 ---
 
-Made with 🔥 by [muin](https://github.com/muin)
+Made by [muin](https://github.com/muinmomin)
 
 *Roast responsibly. Don't roast production code in public without permission.*

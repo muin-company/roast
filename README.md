@@ -134,12 +134,127 @@ JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, Ruby, PHP, Swift, Kotlin
 -h, --help             Display help
 ```
 
+## Real-World Scenarios
+
+### Pre-commit sanity check
+```bash
+# About to commit that refactor you've been working on
+$ git diff HEAD src/auth.js | roast
+
+🔥 You're exporting the private key in plaintext? Bold strategy.
+
+🔥 This regex will match "admin@evil.com" as a valid admin email.
+Better tighten that up unless you're running a very open company.
+
+💡 hash.compare() is async but you're not awaiting it. This will
+always return true. Always. Every time. 100% authentication success rate!
+
+# ...okay maybe I should test this first
+```
+
+### Reviewing that "quick fix" from 2am
+```bash
+$ roast src/hotfix-do-not-touch.js
+
+🔥 File name is literally "do-not-touch.js" - that's a red flag
+wrapped in another red flag
+
+🔥 You're catching errors and logging "it broke lol". When production
+is on fire, your logs will just say "it broke lol" repeated 50,000 times.
+
+🔥 This setTimeout is set to 86400000ms. That's 24 hours. Hope nobody's
+waiting for this response.
+
+✨ The actual logic is... fine? But please, for the love of debugging,
+add better error messages.
+```
+
+### Checking tutorial code before copy-paste
+```bash
+$ curl -s https://example.com/tutorial.js | roast
+
+🔥 This tutorial is using var in 2026. It was written during the
+Mesozoic Era and hasn't been updated since.
+
+⚠️  jQuery is loaded from an HTTP URL. That's a mixed content warning
+waiting to happen.
+
+💡 Modern replacement using fetch() would be 10 lines and zero
+dependencies. Just saying.
+```
+
+### The "I learned this yesterday" review
+```bash
+# Just picked up Rust, wrote first program
+$ roast hello.rs --serious
+
+📋 Professional Code Review
+──────────────────────────────────────────────────
+
+✅ Proper error handling with Result type
+
+⚠️  .unwrap() on line 8 will panic on error. Consider using
+    expect() with a meaningful message, or propagate with ?
+
+💡 String ownership is correct, but you're cloning unnecessarily
+   on line 12. Use a reference: &user_name
+
+✅ Good use of match for control flow
+
+Overall: Solid first program. Remove the unwrap() and you're good to go.
+```
+
+### Legacy code archaeology
+```bash
+$ roast legacy/customer-import-final-v3-NEW-USE-THIS.php
+
+🔥 Based on the filename, this has been "final" at least 3 times.
+That's not a good sign.
+
+🔥 mysql_connect() was deprecated in PHP 5.5 (2013) and removed in
+PHP 7 (2015). This code is old enough to vote.
+
+🔥 SQL query is concatenating user input directly. This is how
+Little Bobby Tables drops your database.
+
+🔥 No password hashing - passwords stored in plaintext. In the
+event of a breach, this is "directly to jail, do not pass go" territory.
+
+💡 Complete rewrite recommended. Start fresh with PDO and password_hash().
+This is beyond roasting, this needs a Viking funeral.
+```
+
+### Team code style check
+```bash
+# Check if the new junior's code matches your style
+$ roast --serious src/components/UserCard.jsx
+
+📋 Professional Code Review
+──────────────────────────────────────────────────
+
+⚠️  Component is 450 lines long. Consider splitting into smaller pieces.
+
+⚠️  Inline styles instead of CSS modules/styled-components
+
+💡 Three useState hooks could be combined into useReducer
+
+✅ Proper PropTypes definitions
+
+✅ Good accessibility attributes (aria-labels, roles)
+
+⚠️  useEffect missing dependency 'userId' - will cause stale closures
+
+Recommendation: Works, but needs refactoring before it grows larger.
+```
+
 ## Tips
 
 - **Share your roasts** - They're designed to be screenshot-friendly
 - **Use serious mode for PRs** - Save the humor for your own code
 - **Review before committing** - Catch bugs before your CI does
 - **Roast legacy code** - Therapeutic and educational
+- **Pipe from git diff** - Review only what changed: `git diff | roast`
+- **Works with stdin** - `cat sketch.py | roast` or `pbpaste | roast`
 
 ## Contributing
 

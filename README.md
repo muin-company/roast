@@ -396,6 +396,123 @@ $ roast --serious src/components/UserCard.jsx
 Recommendation: Works, but needs refactoring before it grows larger.
 ```
 
+### Example 8: Database query optimization check
+
+```bash
+$ roast src/queries.js
+
+🔥 CODE ROAST 🔥
+Victim: queries.js (JavaScript)
+──────────────────────────────────────────────────
+
+🔥 You're fetching the entire users table with SELECT * and THEN 
+filtering in JavaScript. Congratulations, you've reinvented the 
+world's worst database.
+
+🔥 N+1 query problem in getUserPosts(). You're making 1 query for 
+users, then 1 query per user for posts. For 100 users that's 101 
+queries. Your database called, it wants a divorce.
+
+💡 Use JOIN:
+   SELECT users.*, posts.* FROM users 
+   LEFT JOIN posts ON users.id = posts.user_id
+
+🔥 No connection pooling. Every request opens a new connection. 
+You're treating database connections like disposable coffee cups.
+
+💡 Use a connection pool:
+   const pool = mysql.createPool({ ... });
+
+✨ At least you're using prepared statements. That's the only thing 
+standing between you and a SQL injection disaster.
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Example 9: TypeScript migration review
+
+```bash
+$ roast --serious src/legacy-migrated.ts
+
+📋 Professional Code Review
+File: legacy-migrated.ts (TypeScript)
+──────────────────────────────────────────────────
+
+⚠️  80% of types are 'any' - defeats the purpose of TypeScript
+    Found: function processData(data: any, config: any): any
+
+🚨 Type assertion 'as any' used 47 times throughout the file
+   This is TypeScript surrender, not TypeScript migration
+
+⚠️  @ts-ignore comments covering actual type errors
+   Line 23: @ts-ignore
+   Line 45: @ts-ignore  
+   Line 67: @ts-ignore
+
+💡 Gradual migration approach:
+   1. Start with proper interface definitions
+   2. Replace 'any' one function at a time
+   3. Remove @ts-ignore, fix the actual issues
+   4. Enable strict mode: "strict": true in tsconfig.json
+
+✅ Good: Converted var to const/let consistently
+✅ Good: Removed jQuery dependencies
+
+Current grade: D+ (compiles but doesn't provide type safety)
+Recommended: Dedicate sprint to proper typing before adding features
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Example 10: Performance bottleneck detection
+
+```bash
+$ roast --severity harsh performance/data-processor.py
+
+🔥 CODE ROAST 🔥
+Victim: data-processor.py (Python)
+Severity: 💀 NO MERCY MODE
+──────────────────────────────────────────────────
+
+💀 Nested loops with O(n³) complexity processing a 10,000 item list.
+Your runtime complexity is "heat death of the universe."
+
+💀 You're reading the same CSV file 500 times inside a loop. I've 
+seen people use AWS more efficiently than this, and I've seen people 
+mine Bitcoin on Raspberry Pis.
+
+💀 Loading entire 2GB JSON file into memory with json.load(). 
+You're one large file away from an OOMKiller visit.
+
+💡 Use streaming JSON parser:
+   import ijson
+   for item in ijson.items(file, 'item'):
+       process(item)
+
+💀 Pandas DataFrame.iterrows() in production code. Did you even 
+read the Pandas docs? They literally beg you not to do this.
+
+💡 Use vectorized operations:
+   df['result'] = df['col1'] * df['col2']  # 1000x faster
+
+💀 No caching, no memoization, no optimization whatsoever. You're 
+recalculating the same Fibonacci sequence 50,000 times.
+
+💡 Add @lru_cache decorator:
+   from functools import lru_cache
+   @lru_cache(maxsize=128)
+   def expensive_calc(n): ...
+
+The good news: This code works.
+The bad news: It'll work sometime next Tuesday.
+
+──────────────────────────────────────────────────
+```
+
 ## Tips
 
 - **Share your roasts** - They're designed to be screenshot-friendly

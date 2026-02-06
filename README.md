@@ -760,6 +760,561 @@ The bad news: You're not using any of its security features.
 
 ---
 
+### Vue 3 Composition API Review
+
+```bash
+$ roast src/components/UserProfile.vue --serious
+
+📋 Professional Code Review
+File: UserProfile.vue (TypeScript)
+──────────────────────────────────────────────────
+
+⚠️  Using reactive() for an array - should use ref() instead
+   const users = reactive([])  // Will lose reactivity on reassignment
+
+💡 Fix:
+   const users = ref([])
+   // Access with users.value
+
+🚨 watch() without cleanup in onUnmounted - memory leak risk
+   watch(userId, async (newId) => {
+     const interval = setInterval(fetchUser, 5000)
+     // Never cleared!
+   })
+
+💡 Add cleanup:
+   let interval = null
+   watch(userId, async (newId) => {
+     if (interval) clearInterval(interval)
+     interval = setInterval(fetchUser, 5000)
+   })
+   onUnmounted(() => clearInterval(interval))
+
+⚠️  Computed property making API calls - should be in watchEffect
+   const userData = computed(() => {
+     fetch(`/api/users/${userId.value}`)  // Computed should be synchronous
+   })
+
+💡 Use watchEffect instead:
+   const userData = ref(null)
+   watchEffect(async () => {
+     userData.value = await fetch(`/api/users/${userId.value}`)
+   })
+
+✅ Good: Proper use of <script setup> syntax
+✅ Good: TypeScript interfaces defined for props
+
+⚠️  v-for without :key on dynamic list
+   <div v-for="user in users">  // Missing key
+
+💡 Always add :key:
+   <div v-for="user in users" :key="user.id">
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Vue 3 State Management Review (Pinia)
+
+```bash
+$ roast stores/user.ts
+
+🔥 CODE ROAST 🔥
+Victim: user.ts (TypeScript)
+──────────────────────────────────────────────────
+
+🔥 Mutating state directly in components instead of using actions.
+You have a state management library. Use it!
+
+💡 Instead of:
+   // In component
+   const store = useUserStore()
+   store.user.name = 'John'  // Direct mutation
+
+   Use actions:
+   // In store
+   actions: {
+     updateUserName(name: string) {
+       this.user.name = name
+     }
+   }
+
+🔥 Async state updates without loading/error states. When the API is
+slow, your users stare at stale data wondering if it broke.
+
+💡 Add loading states:
+   state: () => ({
+     user: null,
+     loading: false,
+     error: null
+   }),
+   actions: {
+     async fetchUser(id: number) {
+       this.loading = true
+       this.error = null
+       try {
+         this.user = await api.getUser(id)
+       } catch (e) {
+         this.error = e.message
+       } finally {
+         this.loading = false
+       }
+     }
+   }
+
+🔥 No state persistence. Refresh the page and boom, everything's gone.
+Your users will love logging in 50 times a day.
+
+💡 Use pinia-plugin-persistedstate:
+   import { createPinia } from 'pinia'
+   import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+   
+   const pinia = createPinia()
+   pinia.use(piniaPluginPersistedstate)
+
+✨ Good use of getters for computed state
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Angular Component Review
+
+```bash
+$ roast user-list.component.ts --serious
+
+📋 Professional Code Review
+File: user-list.component.ts (TypeScript)
+──────────────────────────────────────────────────
+
+🚨 Subscriptions not unsubscribed - memory leak on every route change
+   ngOnInit() {
+     this.userService.getUsers().subscribe(users => {
+       this.users = users
+     })
+     // Subscription never cleaned up!
+   }
+
+💡 Fix with takeUntilDestroyed (Angular 16+):
+   private destroy$ = new Subject<void>()
+   
+   ngOnInit() {
+     this.userService.getUsers()
+       .pipe(takeUntil(this.destroy$))
+       .subscribe(users => this.users = users)
+   }
+   
+   ngOnDestroy() {
+     this.destroy$.next()
+     this.destroy$.complete()
+   }
+
+   Or use async pipe (better):
+   users$ = this.userService.getUsers()
+   // Template: <div *ngFor="let user of users$ | async">
+
+🚨 No error handling on HTTP requests
+   this.http.get('/api/users').subscribe(data => {
+     this.users = data
+     // What if this fails?
+   })
+
+💡 Add error handler:
+   this.http.get('/api/users').subscribe({
+     next: (data) => this.users = data,
+     error: (err) => {
+       this.errorMessage = 'Failed to load users'
+       console.error(err)
+     }
+   })
+
+⚠️  ChangeDetectionStrategy.Default - unnecessary change detection cycles
+   @Component({
+     // Missing changeDetection
+   })
+
+💡 Use OnPush for better performance:
+   @Component({
+     selector: 'app-user-list',
+     changeDetection: ChangeDetectionStrategy.OnPush
+   })
+
+✅ Good: Dependency injection properly used
+✅ Good: Component is focused (single responsibility)
+
+⚠️  Constructor logic - should be in ngOnInit
+   constructor(private userService: UserService) {
+     this.loadUsers()  // Don't do work in constructor
+   }
+
+💡 Move to lifecycle hook:
+   ngOnInit() {
+     this.loadUsers()
+   }
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Angular Service with RxJS Patterns
+
+```bash
+$ roast user.service.ts
+
+🔥 CODE ROAST 🔥
+Victim: user.service.ts (TypeScript)
+──────────────────────────────────────────────────
+
+🔥 Nested subscriptions - classic "callback hell" in RxJS form.
+We invented operators to avoid this!
+
+💡 Instead of:
+   getUser(id: number) {
+     this.http.get(`/users/${id}`).subscribe(user => {
+       this.http.get(`/users/${user.managerId}`).subscribe(manager => {
+         // Nested nightmare
+       })
+     })
+   }
+
+   Use switchMap:
+   getUser(id: number): Observable<User> {
+     return this.http.get<User>(`/users/${id}`).pipe(
+       switchMap(user => 
+         this.http.get<User>(`/users/${user.managerId}`).pipe(
+           map(manager => ({ ...user, manager }))
+         )
+       )
+     )
+   }
+
+🔥 No caching - hammering the API with duplicate requests.
+Your backend engineer is crying.
+
+💡 Add ShareReplay:
+   private cache$ = new Map<number, Observable<User>>()
+   
+   getUser(id: number): Observable<User> {
+     if (!this.cache$.has(id)) {
+       this.cache$.set(
+         id,
+         this.http.get<User>(`/users/${id}`).pipe(
+           shareReplay({ bufferSize: 1, refCount: true })
+         )
+       )
+     }
+     return this.cache$.get(id)!
+   }
+
+🔥 Manual error handling instead of using catchError operator.
+You're writing the same try-catch 50 times.
+
+💡 Use catchError:
+   getUser(id: number): Observable<User> {
+     return this.http.get<User>(`/users/${id}`).pipe(
+       catchError(err => {
+         console.error('User fetch failed:', err)
+         return throwError(() => new Error('Failed to load user'))
+       })
+     )
+   }
+
+✨ At least you're using typed observables. That's something.
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Angular Template Optimization Review
+
+```bash
+$ roast user-list.component.html --severity mild
+
+😊 CODE ROAST 🔥
+Victim: user-list.component.html (HTML)
+Severity: Mild
+──────────────────────────────────────────────────
+
+😊 Good use of trackBy in *ngFor - performance win!
+
+⚠️  Multiple async pipe subscriptions to same observable
+   <div>{{ users$ | async }}</div>
+   <div>{{ users$ | async }}</div>  // Two subscriptions!
+
+💡 Store in variable:
+   <div *ngIf="users$ | async as users">
+     <div>{{ users }}</div>
+     <div>{{ users }}</div>
+   </div>
+
+💡 Pipes inside *ngFor - recalculated on every change detection
+   <div *ngFor="let user of users">
+     {{ user.name | uppercase }}  // Fine
+     {{ formatDate(user.createdAt) }}  // Function call - bad!
+   </div>
+
+💡 Create a pure pipe:
+   @Pipe({ name: 'formatDate', pure: true })
+   export class FormatDatePipe implements PipeTransform {
+     transform(date: Date): string {
+       return new Intl.DateTimeFormat().format(date)
+     }
+   }
+
+😊 Proper null checks with optional chaining - nice!
+
+⚠️  Inline styles instead of CSS classes
+   <div [style.color]="user.active ? 'green' : 'red'">
+
+💡 Use CSS classes:
+   <div [class.active]="user.active" [class.inactive]="!user.active">
+   
+   // styles.css
+   .active { color: green; }
+   .inactive { color: red; }
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Svelte Component Review
+
+```bash
+$ roast UserCard.svelte --serious
+
+📋 Professional Code Review
+File: UserCard.svelte (JavaScript)
+──────────────────────────────────────────────────
+
+🚨 Reactive statement depending on async operation - race condition risk
+   $: if (userId) {
+     fetch(`/api/users/${userId}`)
+       .then(r => r.json())
+       .then(data => user = data)
+   }
+
+💡 Use proper async handling:
+   import { onMount } from 'svelte'
+   
+   let userPromise
+   $: userPromise = userId ? fetch(`/api/users/${userId}`).then(r => r.json()) : null
+   
+   // Template:
+   {#await userPromise}
+     Loading...
+   {:then user}
+     {user.name}
+   {:catch error}
+     Error: {error.message}
+   {/await}
+
+⚠️  Store subscription not unsubscribed - memory leak
+   import { userStore } from './stores'
+   
+   userStore.subscribe(value => {
+     currentUser = value
+     // Never unsubscribed!
+   })
+
+💡 Use $ auto-subscription:
+   import { userStore } from './stores'
+   
+   $: currentUser = $userStore  // Auto cleanup
+
+✅ Good: Props properly typed with TypeScript
+
+⚠️  Direct DOM manipulation instead of binding
+   let inputEl
+   function focusInput() {
+     inputEl.focus()  // Works but not ideal
+   }
+
+💡 Use action or bind:
+   <script>
+     import { onMount } from 'svelte'
+     let inputEl
+     
+     onMount(() => {
+       inputEl.focus()
+     })
+   </script>
+   
+   <input bind:this={inputEl} />
+
+🚨 Component state not persisted - loses data on navigation
+   let formData = { name: '', email: '' }
+
+💡 Use localStorage or a store:
+   import { writable } from 'svelte/store'
+   import { persisted } from 'svelte-local-storage-store'
+   
+   const formData = persisted('formData', { name: '', email: '' })
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Svelte Store Patterns Review
+
+```bash
+$ roast stores.js
+
+🔥 CODE ROAST 🔥
+Victim: stores.js (JavaScript)
+──────────────────────────────────────────────────
+
+🔥 Writable store exposed directly - anyone can write to it.
+That's not state management, that's state chaos.
+
+💡 Create derived store with controlled updates:
+   import { writable, derived } from 'svelte/store'
+   
+   // Private
+   const _users = writable([])
+   
+   // Public read-only
+   export const users = derived(_users, $users => $users)
+   
+   // Controlled updates
+   export const addUser = (user) => {
+     _users.update(u => [...u, user])
+   }
+
+🔥 Async operations directly in stores without loading state.
+Your UI has no idea if it's loading, loaded, or errored.
+
+💡 Add request states:
+   function createAsyncStore() {
+     const { subscribe, set, update } = writable({
+       data: null,
+       loading: false,
+       error: null
+     })
+     
+     return {
+       subscribe,
+       fetch: async (id) => {
+         update(state => ({ ...state, loading: true, error: null }))
+         try {
+           const response = await fetch(`/api/users/${id}`)
+           const data = await response.json()
+           set({ data, loading: false, error: null })
+         } catch (error) {
+           set({ data: null, loading: false, error: error.message })
+         }
+       }
+     }
+   }
+   
+   export const userStore = createAsyncStore()
+
+🔥 No store persistence - close tab, lose everything.
+Hope your users love re-entering form data!
+
+💡 Create persistent store:
+   import { writable } from 'svelte/store'
+   
+   function persistedStore(key, initial) {
+     const stored = localStorage.getItem(key)
+     const store = writable(stored ? JSON.parse(stored) : initial)
+     
+     store.subscribe(value => {
+       localStorage.setItem(key, JSON.stringify(value))
+     })
+     
+     return store
+   }
+   
+   export const preferences = persistedStore('preferences', {
+     theme: 'light',
+     language: 'en'
+   })
+
+✨ At least you're using stores instead of prop drilling everywhere.
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### SvelteKit Route Load Function Review
+
+```bash
+$ roast src/routes/users/[id]/+page.ts --serious
+
+📋 Professional Code Review
+File: +page.ts (TypeScript)
+──────────────────────────────────────────────────
+
+🚨 No error handling in load function - errors bubble to global error page
+   export async function load({ params }) {
+     const user = await fetch(`/api/users/${params.id}`).then(r => r.json())
+     return { user }
+   }
+
+💡 Add proper error handling:
+   import { error } from '@sveltejs/kit'
+   
+   export async function load({ params, fetch }) {
+     try {
+       const response = await fetch(`/api/users/${params.id}`)
+       
+       if (!response.ok) {
+         throw error(response.status, {
+           message: 'User not found'
+         })
+       }
+       
+       const user = await response.json()
+       return { user }
+     } catch (err) {
+       throw error(500, {
+         message: 'Failed to load user'
+       })
+     }
+   }
+
+⚠️  No loading state - users see blank screen during fetch
+   
+💡 Use streaming with promises:
+   export async function load({ params, fetch }) {
+     return {
+       user: fetch(`/api/users/${params.id}`).then(r => r.json())
+     }
+   }
+   
+   // In +page.svelte:
+   {#await data.user}
+     <Loading />
+   {:then user}
+     <UserProfile {user} />
+   {/await}
+
+✅ Good: Using SvelteKit's fetch for SSR
+
+⚠️  Not using typed load function
+   export async function load({ params }) {
+     // No types!
+   }
+
+💡 Add types:
+   import type { PageLoad } from './$types'
+   
+   export const load: PageLoad = async ({ params, fetch }) => {
+     // Type-safe!
+   }
+
+──────────────────────────────────────────────────
+```
+
+---
+
 ## CI/CD Integration
 
 ### GitHub Actions Pre-Merge Hook

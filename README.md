@@ -513,6 +513,463 @@ The bad news: It'll work sometime next Tuesday.
 ──────────────────────────────────────────────────
 ```
 
+---
+
+## Framework Integration Examples
+
+### React Component Review (Pre-PR Workflow)
+
+```bash
+# Review component before creating PR
+$ roast src/components/UserProfile.tsx
+
+🔥 CODE ROAST 🔥
+Victim: UserProfile.tsx (TypeScript)
+──────────────────────────────────────────────────
+
+🔥 useEffect with no dependency array. Congratulations, you've created
+an infinite render loop waiting to happen.
+
+💡 Add dependencies or use useMemo:
+   useEffect(() => { fetchUser() }, [userId])
+
+🔥 Inline styles in JSX for every single div. CSS-in-JS libraries
+exist for a reason. Your bundle size is crying.
+
+💡 Extract to styled-components or CSS modules:
+   const Container = styled.div`margin: 20px;`
+
+✅ Props are properly typed with TypeScript interfaces
+
+⚠️  No error boundary. When this component crashes, it'll take
+    the whole app down with it.
+
+💡 Wrap in ErrorBoundary:
+   <ErrorBoundary fallback={<ErrorUI />}>
+     <UserProfile />
+   </ErrorBoundary>
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Next.js API Route Security Check
+
+```bash
+$ roast pages/api/users/[id].ts --serious
+
+📋 Professional Code Review
+File: pages/api/users/[id].ts (TypeScript)
+──────────────────────────────────────────────────
+
+🚨 No authentication middleware - API route is publicly accessible
+   Anyone can call /api/users/123 and get user data
+
+💡 Add auth check:
+   export default async function handler(req, res) {
+     const session = await getServerSession(req, res, authOptions)
+     if (!session) return res.status(401).json({ error: 'Unauthorized' })
+     // ... rest of handler
+   }
+
+🚨 Direct database query with user input - SQL injection risk
+   const user = await db.query(`SELECT * FROM users WHERE id = ${req.query.id}`)
+
+💡 Use parameterized queries:
+   const user = await db.query('SELECT * FROM users WHERE id = $1', [req.query.id])
+
+⚠️  No rate limiting - vulnerable to abuse
+
+💡 Add rate limiting with next-rate-limit:
+   import rateLimit from 'next-rate-limit'
+   const limiter = rateLimit({ interval: 60000, uniqueTokenPerInterval: 500 })
+
+✅ Good: Proper TypeScript types for request/response
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Express.js Middleware Chain Review
+
+```bash
+$ roast src/middleware/auth.js
+
+🔥 CODE ROAST 🔥
+Victim: auth.js (JavaScript)
+──────────────────────────────────────────────────
+
+🔥 You're calling next() inside a try block and also in the catch.
+One error and the middleware chain gets called twice. Brilliant.
+
+💡 Fix:
+   try {
+     // ... auth logic
+     next()
+   } catch (err) {
+     res.status(401).json({ error: err.message })
+     // Don't call next() here!
+   }
+
+🔥 jwt.verify() but you're not checking token expiration separately.
+Expired tokens = valid tokens in your world.
+
+💡 Check exp claim:
+   const decoded = jwt.verify(token, secret)
+   if (decoded.exp * 1000 < Date.now()) {
+     throw new Error('Token expired')
+   }
+
+🔥 Setting req.user but never checking if it exists in other middleware.
+Runtime errors incoming.
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Vue 3 Composition API Review
+
+```bash
+$ roast src/composables/useAuth.ts --severity mild
+
+😊 CODE ROAST 🔥
+Victim: useAuth.ts (TypeScript)
+Severity: Mild
+──────────────────────────────────────────────────
+
+😊 Good use of composables pattern! Separating auth logic makes sense.
+
+⚠️  You're using ref() for complex objects. Consider reactive() instead:
+   // Instead of: const user = ref({ name: '', email: '' })
+   const user = reactive({ name: '', email: '' })
+
+💡 Token stored in ref but not persisted. Add localStorage:
+   const token = ref(localStorage.getItem('token'))
+   watch(token, (newToken) => {
+     if (newToken) localStorage.setItem('token', newToken)
+   })
+
+😊 Login function handles errors well with try/catch
+
+💡 Consider adding auto-refresh logic:
+   let refreshTimeout: NodeJS.Timeout
+   watch(token, (newToken) => {
+     if (newToken) {
+       const decoded = jwtDecode(newToken)
+       const expiresIn = decoded.exp * 1000 - Date.now() - 60000 // 1 min before expiry
+       refreshTimeout = setTimeout(refreshToken, expiresIn)
+     }
+   })
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### FastAPI Python Backend Review
+
+```bash
+$ roast app/routers/users.py --serious
+
+📋 Professional Code Review
+File: users.py (Python)
+──────────────────────────────────────────────────
+
+🚨 No input validation on email field - accepts any string
+   email: str  # Will accept "notanemail" as valid
+
+💡 Use Pydantic EmailStr:
+   from pydantic import EmailStr
+   class UserCreate(BaseModel):
+       email: EmailStr  # Validates email format
+
+⚠️  Password length not enforced - users can set "123" as password
+
+💡 Add Pydantic validator:
+   from pydantic import validator, Field
+   password: str = Field(min_length=8)
+   
+   @validator('password')
+   def validate_password(cls, v):
+       if not any(c.isupper() for c in v):
+           raise ValueError('Must contain uppercase')
+       return v
+
+🚨 No pagination on /users endpoint - will return entire table
+   @app.get("/users")  # Returns all users!
+
+💡 Add pagination:
+   @app.get("/users")
+   async def list_users(skip: int = 0, limit: int = 100):
+       return db.query(User).offset(skip).limit(limit).all()
+
+✅ Good: Using Pydantic models for request/response validation
+✅ Good: Async/await for database queries
+
+──────────────────────────────────────────────────
+```
+
+---
+
+### Django Views Security Audit
+
+```bash
+$ roast views.py --severity harsh
+
+🔥 CODE ROAST 🔥
+Victim: views.py (Python)
+Severity: 💀 NO MERCY
+──────────────────────────────────────────────────
+
+💀 You imported User with from .models import * - A guaranteed way to
+have no idea what's in scope. Hope you enjoy debugging mystery bugs.
+
+💀 Raw SQL with string formatting. This is a SQL injection tutorial.
+   cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
+
+💡 Use Django ORM or parameterized queries:
+   User.objects.get(id=user_id)  # ORM (safe)
+   # Or:
+   cursor.execute("SELECT * FROM users WHERE id = %s", [user_id])
+
+💀 @login_required decorator missing on sensitive views. Your "admin only"
+endpoints are accessible to anyone with a browser.
+
+💀 No CSRF protection on POST endpoints. Every form submission is a
+phishing opportunity.
+
+💡 Add CSRF middleware and use {% csrf_token %} in templates
+
+💀 Returning user passwords in API responses. Even hashed passwords
+shouldn't be exposed. This is privacy 101.
+
+💡 Exclude password from serializer:
+   class UserSerializer(serializers.ModelSerializer):
+       class Meta:
+           model = User
+           exclude = ['password']
+
+The good news: Django is a good framework.
+The bad news: You're not using any of its security features.
+
+──────────────────────────────────────────────────
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions Pre-Merge Hook
+
+Add automated roasting to your CI pipeline:
+
+```yaml
+# .github/workflows/code-review.yml
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  roast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install roast
+        run: npm install -g @muin/roast
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v39
+      
+      - name: Review changed code
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "## 🔥 AI Code Review" >> $GITHUB_STEP_SUMMARY
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ "$file" =~ \.(js|ts|py|go|rs)$ ]]; then
+              echo "### $file" >> $GITHUB_STEP_SUMMARY
+              roast --serious "$file" >> $GITHUB_STEP_SUMMARY || true
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+      
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+```
+
+---
+
+### Pre-commit Hook (Local Development)
+
+```bash
+# .git/hooks/pre-commit
+#!/bin/bash
+
+echo "🔥 Roasting your changes before commit..."
+
+# Get staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts|py|go|rs)$')
+
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+# Roast each file
+for file in $STAGED_FILES; do
+  echo "Reviewing: $file"
+  roast --serious "$file" || {
+    echo "❌ Code review found issues. Fix them or commit with --no-verify"
+    exit 1
+  }
+done
+
+echo "✅ Code review passed!"
+exit 0
+```
+
+Make it executable:
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+---
+
+### VS Code Integration (Task)
+
+```json
+// .vscode/tasks.json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Roast Current File",
+      "type": "shell",
+      "command": "roast --serious ${file}",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Roast Changed Files",
+      "type": "shell",
+      "command": "git diff --name-only | grep -E '\\.(js|ts|py)$' | xargs -I {} roast --serious {}",
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}
+```
+
+Use: `Cmd+Shift+P` → "Run Task" → "Roast Current File"
+
+---
+
+## Advanced Usage Patterns
+
+### Team Code Review Workflow
+
+**1. Junior developer submits PR:**
+```bash
+$ git checkout feature/user-authentication
+$ git diff main...HEAD | roast --serious > review.txt
+$ cat review.txt
+# Fix issues found
+$ git add .
+$ git commit -m "fix: address code review feedback"
+```
+
+**2. Senior developer validates fixes:**
+```bash
+$ gh pr checkout 123
+$ roast --severity mild src/auth/* --no-color | tee pr-review.md
+$ gh pr comment --body-file pr-review.md
+```
+
+---
+
+### Pair Programming Mode
+
+```bash
+# Developer A writes code, Developer B reviews in real-time
+$ fswatch -o src/ | xargs -n1 -I{} roast src/index.js
+
+# Every file save triggers a roast
+```
+
+---
+
+### Custom Roast Severity Config
+
+```json
+// .roastrc.json
+{
+  "severity": "medium",
+  "model": "claude-sonnet-4-5",
+  "excludePatterns": [
+    "*.test.js",
+    "*.spec.ts",
+    "dist/*",
+    "node_modules/*"
+  ],
+  "focusAreas": [
+    "security",
+    "performance",
+    "best-practices"
+  ],
+  "output": {
+    "color": true,
+    "emoji": true,
+    "format": "table"
+  }
+}
+```
+
+Usage:
+```bash
+$ roast src/app.js  # Uses .roastrc.json config
+```
+
+---
+
+### Batch Roasting (Entire Project Audit)
+
+```bash
+# Roast all JavaScript files, save to report
+$ find src -name "*.js" -type f | while read file; do
+    echo "## $file" >> audit-report.md
+    roast --serious "$file" --no-color >> audit-report.md
+    echo "" >> audit-report.md
+  done
+
+# Generate summary
+$ echo "# Code Audit Summary" > summary.md
+$ grep "🚨" audit-report.md | wc -l | xargs echo "Critical issues:" >> summary.md
+$ grep "⚠️" audit-report.md | wc -l | xargs echo "Warnings:" >> summary.md
+$ cat summary.md audit-report.md > final-audit.md
+```
+
+---
+
 ## Tips
 
 - **Share your roasts** - They're designed to be screenshot-friendly
@@ -521,6 +978,9 @@ The bad news: It'll work sometime next Tuesday.
 - **Roast legacy code** - Therapeutic and educational
 - **Pipe from git diff** - Review only what changed: `git diff | roast`
 - **Works with stdin** - `cat sketch.py | roast` or `pbpaste | roast`
+- **Integrate with CI/CD** - Automate code reviews in your pipeline
+- **Create team standards** - Use roast to enforce coding conventions
+- **Custom configs** - Set project-specific roast rules with `.roastrc.json`
 
 ## Contributing
 

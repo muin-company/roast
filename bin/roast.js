@@ -17,10 +17,18 @@ program
   .version(packageJson.version)
   .argument('<file>', 'code file to roast')
   .option('-s, --serious', 'serious mode (professional review)')
+  .option('--severity <level>', 'roast severity: mild, medium, harsh', 'medium')
   .option('-m, --model <model>', 'AI model to use', 'claude-sonnet-4-5-20250929')
   .option('--no-color', 'disable colors')
   .action(async (file, options) => {
     try {
+      // Validate severity level
+      const validSeverities = ['mild', 'medium', 'harsh'];
+      if (options.severity && !validSeverities.includes(options.severity)) {
+        console.error(chalk.red(`Invalid severity level: ${options.severity}`));
+        console.error(chalk.gray(`Valid options: ${validSeverities.join(', ')}`));
+        process.exit(1);
+      }
       await roastFile(file, options);
     } catch (error) {
       console.error(chalk.red('💥 Error:'), error.message);

@@ -127,11 +127,31 @@ JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, Ruby, PHP, Swift, Kotlin
 ## Options
 
 ```
--s, --serious          Professional review mode (no humor)
--m, --model <model>    AI model to use (default: claude-sonnet-4-5)
---no-color             Disable colors
--V, --version          Output version
--h, --help             Display help
+-s, --serious              Professional review mode (no humor)
+--severity <level>         Roast severity: mild, medium, harsh (default: medium)
+-m, --model <model>        AI model to use (default: claude-sonnet-4-5)
+--no-color                 Disable colors
+-V, --version              Output version
+-h, --help                 Display help
+```
+
+### Severity Levels
+
+**Mild** (😊 Be Nice Mode): Friendly, encouraging feedback. Perfect for beginners or when you want constructive criticism with a supportive tone.
+```bash
+roast --severity mild src/app.js
+```
+
+**Medium** (🔥 Default): Balanced mix of humor and criticism. Sarcastic but helpful, like a senior dev at code review.
+```bash
+roast src/app.js
+# or explicitly:
+roast --severity medium src/app.js
+```
+
+**Harsh** (💀 No Mercy): Brutally honest, savage roasts. Only use this if you can handle the truth. Gordon Ramsay mode.
+```bash
+roast --severity harsh src/app.js
 ```
 
 ## Examples

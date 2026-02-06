@@ -134,6 +134,135 @@ JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, Ruby, PHP, Swift, Kotlin
 -h, --help             Display help
 ```
 
+## Examples
+
+### Example 1: Quick file roast
+
+```bash
+$ roast src/utils/array-helpers.js
+
+🔥 CODE ROAST 🔥
+Victim: array-helpers.js (JavaScript)
+──────────────────────────────────────────────────
+
+🔥 You wrote a custom array flatten function? Array.flat() 
+has been in JavaScript since 2019. ES2019 is not "too new."
+
+🔥 uniqueArray uses indexOf in a loop - O(n²) complexity.
+Set([...arr]) is O(n) and already built in.
+
+💡 Half these functions are one-liners with modern JS:
+   flatten: arr.flat()
+   unique: [...new Set(arr)]
+   last: arr.at(-1)
+
+✨ At least they work correctly. But you've essentially 
+reinvented lodash, poorly.
+
+──────────────────────────────────────────────────
+```
+
+### Example 2: Serious mode for team PR review
+
+```bash
+$ roast --serious src/api/auth.ts
+
+📋 Professional Code Review
+File: auth.ts (TypeScript)
+──────────────────────────────────────────────────
+
+🚨 Password comparison using === instead of timing-safe compare
+   Risk: Timing attacks could leak password information
+
+⚠️  JWT secret loaded from process.env without fallback check
+   Will crash on startup if JWTOSECRET is not set
+
+💡 Consider using express-validator for input sanitization
+
+✅ Good: Proper async/await usage throughout
+✅ Good: TypeScript types are well-defined
+
+⚠️  Token expiration set to 30 days - consider shorter duration
+   for sensitive operations
+
+──────────────────────────────────────────────────
+```
+
+### Example 3: Review from stdin (pipe or paste)
+
+```bash
+$ cat suspicious-code.py | roast
+
+🔥 CODE ROAST 🔥
+Victim: stdin (Python)
+──────────────────────────────────────────────────
+
+🔥 eval() on user input? That's not a security vulnerability,
+that's a welcome mat for hackers.
+
+🔥 Bare except: catches everything including KeyboardInterrupt.
+You can't even Ctrl+C out of this disaster.
+
+🔥 Global variables modified inside functions with no documentation.
+Reading this code is like a mystery novel where the butler did it,
+but also the gardener, and maybe the protagonist.
+
+💡 Use ast.literal_eval() for safe evaluation, or better yet,
+json.loads() if you're parsing data.
+
+──────────────────────────────────────────────────
+```
+
+### Example 4: Git diff review before commit
+
+```bash
+$ git diff src/payment-processor.js | roast --serious
+
+📋 Professional Code Review
+──────────────────────────────────────────────────
+
+🚨 Changed error handling to swallow exceptions silently
+   Original code logged errors, new code hides them
+
+⚠️  Removed input validation for transaction amount
+   Could now process negative or NaN values
+
+🚨 API timeout increased from 5s to 60s
+   May cause cascading failures under load
+
+Recommendation: These changes reduce system reliability.
+Suggest reverting the exception handling changes.
+
+──────────────────────────────────────────────────
+```
+
+### Example 5: Custom model for complex code
+
+```bash
+$ roast --model claude-opus-4 src/distributed-lock.go
+
+🔥 CODE ROAST 🔥
+Victim: distributed-lock.go (Go)
+──────────────────────────────────────────────────
+
+🔥 Your distributed lock implementation has a race condition
+between checking and acquiring. Classic "check-then-act" bug.
+
+🔥 Lock timeout is hardcoded to 10 seconds. Production load
+spikes will turn this into a deadlock factory.
+
+💡 Redis SETNX is atomic - use it directly instead of GET + SET.
+Or better yet, use Redlock algorithm for multi-node safety.
+
+🔥 Panic on Redis connection error. In distributed systems,
+network failures are features, not exceptions.
+
+✨ Good use of context for cancellation. That's the one part
+that won't cause a 3 AM page.
+
+──────────────────────────────────────────────────
+```
+
 ## Real-World Scenarios
 
 ### Pre-commit sanity check

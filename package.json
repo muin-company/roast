@@ -1,6 +1,6 @@
 {
-  "name": "@muin/roast",
-  "version": "0.1.0",
+  "name": "@mj-muin/roast",
+  "version": "0.1.1",
   "description": "AI code reviewer that roasts your code (with love)",
   "main": "lib/roast.js",
   "bin": {
@@ -16,6 +16,14 @@
     "developer-tools",
     "humor"
   ],
+  "homepage": "https://github.com/muin-company/roast#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/muin-company/roast.git"
+  },
+  "bugs": {
+    "url": "https://github.com/muin-company/roast/issues"
+  },
   "author": "muin",
   "license": "MIT",
   "engines": {

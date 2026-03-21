@@ -1,10 +1,11 @@
 {
-  "name": "@mj-muin/roast",
-  "version": "0.1.1",
+  "name": "roast-cli",
+  "version": "1.0.0",
   "description": "AI code reviewer that roasts your code (with love)",
   "main": "lib/roast.js",
   "bin": {
-    "roast": "bin/roast.js"
+    "roast": "bin/roast.js",
+    "roast-cli": "bin/roast.js"
   },
   "scripts": {
     "test": "node examples/test.js"

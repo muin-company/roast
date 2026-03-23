@@ -1510,6 +1510,18 @@ Pull requests welcome! Please:
 - Performance analysis
 - Custom roast templates
 
+## Also From MUIN
+
+Love `roast`? Check out our other developer CLI tools:
+
+- **[git-why](https://www.npmjs.com/package/git-why)** — AI-powered git history explainer. Understand *why* code exists before you roast it.
+- **[portguard](https://www.npmjs.com/package/portguard)** — Monitor and kill zombie processes hogging your ports. Fix `EADDRINUSE` in one command.
+- **[oops](https://www.npmjs.com/package/@mj-muin/oops-cli)** — Pipe any error to AI for instant fixes. When roasting reveals real bugs, `oops` fixes them.
+
+## Featured On
+
+📰 Read the launch article on Dev.to: **[4 CLI Tools Every Developer Needs (That You've Never Heard Of)](https://dev.to/mjmuin/4-cli-tools-every-developer-needs-that-youve-never-heard-of-318b)**
+
 ## License
 
 MIT

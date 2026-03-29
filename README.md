@@ -2,6 +2,16 @@
 
 AI code reviewer that roasts your code with humor and honesty.
 
+<div align="center">
+
+## 🚀 Launching on Product Hunt — April 9, 2026
+
+**[👉 Support us on Product Hunt](https://www.producthunt.com/posts/roast-cli)** | Get notified when we launch!
+
+</div>
+
+---
+
 [![npm version](https://badge.fury.io/js/@muin%2Froast.svg)](https://www.npmjs.com/package/@muin/roast)
 [![npm downloads](https://img.shields.io/npm/dm/@muin/roast.svg)](https://www.npmjs.com/package/@muin/roast)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -1510,13 +1520,17 @@ Pull requests welcome! Please:
 - Performance analysis
 - Custom roast templates
 
-## Also From MUIN
+## 🛠️ More CLI Tools from MUIN
 
-Love `roast`? Check out our other developer CLI tools:
+Love `roast`? Check out our other developer productivity tools:
 
-- **[git-why](https://www.npmjs.com/package/git-why)** — AI-powered git history explainer. Understand *why* code exists before you roast it.
-- **[portguard](https://www.npmjs.com/package/portguard)** — Monitor and kill zombie processes hogging your ports. Fix `EADDRINUSE` in one command.
-- **[oops](https://www.npmjs.com/package/@mj-muin/oops-cli)** — Pipe any error to AI for instant fixes. When roasting reveals real bugs, `oops` fixes them.
+| Tool | Description | NPM |
+|------|-------------|-----|
+| **[git-why](https://github.com/muin-company/git-why)** | AI-powered git history explainer. Understand *why* code exists before you roast it. | [![npm](https://img.shields.io/npm/v/git-why.svg)](https://www.npmjs.com/package/git-why) |
+| **[portguard](https://github.com/muin-company/portguard)** | Monitor and kill zombie processes hogging your ports. Fix `EADDRINUSE` in one command. | [![npm](https://img.shields.io/npm/v/portguard.svg)](https://www.npmjs.com/package/portguard) |
+| **[oops](https://github.com/muin-company/oops-cli)** | Pipe any error to AI for instant fixes. When roasting reveals real bugs, `oops` fixes them. | [![npm](https://img.shields.io/npm/v/@mj-muin/oops-cli.svg)](https://www.npmjs.com/package/@mj-muin/oops-cli) |
+
+**Coming soon:** More tools to make your dev workflow faster. Follow [@muincompany](https://x.com/muincompany) for updates!
 
 ## Featured On
 
@@ -1537,6 +1551,16 @@ Inspired by every brutally honest code review you've ever received (or given).
 
 ---
 
-Made by [muin](https://github.com/muinmomin)
+---
+
+<div align="center">
+
+### Built by [MUIN](https://muin.company) 🚀
+
+**We build AI-powered tools that make developers' lives easier.**
+
+[Website](https://muin.company) • [Twitter](https://x.com/muincompany) • [GitHub](https://github.com/muin-company)
 
 *Roast responsibly. Don't roast production code in public without permission.*
+
+</div>

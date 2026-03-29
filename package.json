@@ -1,6 +1,6 @@
 {
   "name": "roast-cli",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "AI code reviewer that roasts your code (with love)",
   "main": "lib/roast.js",
   "bin": {
@@ -15,10 +15,8 @@
     "ai-code-review",
     "ai",
     "cli",
-    "cli-tool",
     "developer-tools",
     "code-quality",
-    "static-analysis",
     "gordon-ramsay",
     "humor",
     "funny",
@@ -28,7 +26,12 @@
     "javascript",
     "typescript",
     "python",
-    "productivity"
+    "productivity",
+    "sarcastic-code-review",
+    "developer-humor",
+    "code-feedback",
+    "npx-tool",
+    "entertaining-linter"
   ],
   "homepage": "https://github.com/muin-company/roast#readme",
   "repository": {

@@ -56,6 +56,19 @@ someone's car and returning it as a motorcycle.
 
 `roast` gives you instant, brutally honest feedback before you commit. Use roast mode for your own code, serious mode for team reviews.
 
+## How is roast-cli Different?
+
+| Feature | roast-cli | ESLint | SonarQube | GitHub Copilot |
+|---------|-----------|--------|-----------|----------------|
+| **Setup time** | 0 sec (npx) | Minutes | Hours | GitHub account |
+| **Personality** | Gordon Ramsay 🔥 | Dry/technical | Corporate | Helpful AI |
+| **Entertainment** | ✅ High | ❌ None | ❌ None | 🤷 Varies |
+| **Code quality** | ✅ Real feedback | ✅ Strict rules | ✅ Deep analysis | ✅ Suggestions |
+| **Use case** | Quick laugh + insight | Enforce standards | Team quality | Code assistance |
+| **Cost** | Free | Free | Paid tiers | $10/mo |
+
+**Key Differentiator:** We're the only tool that makes code review *fun*. Use us alongside your linter, not instead of it.
+
 ## Installation
 
 ```bash
